@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+    echo "Not enough parameter! Example: multirun 'php test.php' 2"
+    exit 1
+fi
+
+command="$1"
+
+threadcount="$2"
+if ! [[ "$threadcount" =~ ^[0-9]+$ ]]; then
+    echo "The second parameter must be a number!"
+    exit 1
+fi
+
+rm /tmp/multirun_output_thread_*.txt
+echo "Command: $command"
+echo "Threads: $threadcount"
+
+for ((i=1; i<=$threadcount; i++)); do
+    ($command $i && echo $'\n---THREAD FINISHED---') >> "/tmp/multirun_output_thread_$i.txt" 2>&1 &
+done
+
+sleep 1
+multitail /tmp/multirun_output_thread_*.txt
